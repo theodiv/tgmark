@@ -1,0 +1,85 @@
+name: Report a bug
+description: >-
+  Report a defect in TGMark. Security vulnerabilities must be reported via
+  GitHub's private advisory feature, not this form.
+title: "bug: <short description>"
+labels: [bug, triage]
+body:
+  - type: checkboxes
+    id: preflight-checks
+    attributes:
+      label: Before submitting
+      options:
+        - label: >-
+            The issue is not already reported in
+            [open issues](https://github.com/theodiv/tgmark/issues?q=is:issue+state:open).
+          required: true
+
+  - type: input
+    id: version
+    attributes:
+      label: TGMark version
+      description: Output of `pip show tgmark`.
+    validations:
+      required: true
+
+  - type: input
+    id: python-version
+    attributes:
+      label: Python version
+      description: Output of `python3 --version`.
+    validations:
+      required: true
+
+  - type: input
+    id: operating-system
+    attributes:
+      label: Operating system
+      placeholder: Ubuntu 24.04 LTS (Noble Numbat)
+    validations:
+      required: true
+
+  - type: input
+    id: installation-method
+    attributes:
+      label: Installation method
+      placeholder: pip or a local clone
+    validations:
+      required: true
+
+  - type: textarea
+    id: description
+    attributes:
+      label: Description
+      description: The observed behavior, then the expected behavior.
+    validations:
+      required: true
+
+  - type: textarea
+    id: steps-to-reproduce
+    attributes:
+      label: Steps to reproduce
+      description: >-
+        The smallest command line or Python snippet, with the input, that shows
+        the defect with the installed package.
+    validations:
+      required: true
+
+  - type: textarea
+    id: observed-output
+    attributes:
+      label: Observed output
+      description: >-
+        The output, log lines, or error line, exactly as written, with secrets
+        and personal data replaced with `REDACTED`.
+      render: text
+    validations:
+      required: true
+
+  - type: textarea
+    id: additional-context
+    attributes:
+      label: Additional context
+      description: Anything a maintainer cannot infer.
+    validations:
+      required: false

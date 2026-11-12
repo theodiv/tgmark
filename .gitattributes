@@ -1,0 +1,5 @@
+* text=auto eol=lf
+
+# Diff drivers
+*.md    diff=markdown
+*.py    diff=python
