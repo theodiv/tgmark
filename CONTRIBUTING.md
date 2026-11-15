@@ -86,8 +86,8 @@ pytest tests/<path>
 3. Add an entry under `[Unreleased]` in `CHANGELOG.md` for every
    caller-visible change.
 4. Run every gate in Quality Gates.
-5. Open the PR from the template: state the why in the description, mark exactly
-   one type, and complete the checklist.
+5. Open the PR from the template: state the why in the description and complete
+   the checklist.
 
 Report security defects through [SECURITY.md](SECURITY.md), never in a public
 issue or PR.
