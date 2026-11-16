@@ -3,3 +3,4 @@
 # Diff drivers
 *.md    diff=markdown
 *.py    diff=python
+*.sh    diff=bash

@@ -47,6 +47,10 @@ dev = [
   "ruff==0.17.3",
   "zizmor==1.32.0",
 ]
+release = [
+  "build==1.6.1",
+  "twine==7.0.0",
+]
 
 [build-system]
 requires = ["hatchling>=1.27"]
