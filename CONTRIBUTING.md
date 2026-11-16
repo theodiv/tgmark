@@ -31,6 +31,7 @@ leaves them unable to run. `--upgrade-deps` provides pip 25.1 or later, which
 | mypy                  | Strict type checks of `src/` and `tests/`                      |
 | zizmor                | Security checks of the workflows and `dependabot.yml`          |
 | pytest and pytest-cov | Tests and branch coverage                                      |
+| TDLib Oracle          | The pinned Bot API server's verdicts, for `tests/oracle/`      |
 | pre-commit            | Hygiene hooks, Ruff, mypy, and zizmor on every commit          |
 
 All tool configuration lives in `pyproject.toml`. The `dev` dependency group
@@ -68,6 +69,8 @@ ruff format .
 - Every bug fix must add a regression test that fails on the unfixed code.
 - Tests must assert outcomes (outputs, lengths, exit codes, stderr lines), not
   that an internal call happened.
+- Output tests must pass their output through the target's checker
+  in `tests/oracle/`.
 - Tests must not reach the network beyond `127.0.0.1`, use real credentials, or
   write outside pytest's temporary directories.
 - Test code must be annotated as fully as `src/`.
