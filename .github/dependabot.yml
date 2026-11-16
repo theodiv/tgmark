@@ -21,6 +21,7 @@ updates:
       interval: weekly
     cooldown:
       default-days: 7
+      exclude: [tdlib-oracle]
     groups:
       dev-tools:
         patterns: ["*"]
