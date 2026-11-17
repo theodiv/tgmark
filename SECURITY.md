@@ -24,6 +24,15 @@ Report vulnerabilities privately; never open a public issue for one.
 5. The patched release and the advisory are published together.
 6. The advisory credits the reporter unless anonymity is requested.
 
+## Threat Model
+
+- **Unbounded work** — conversion runs in time and memory linear in the input,
+  with no recursion and no regular expression with nested quantifiers, so a long
+  or crafted text cannot stall the caller.
+- **Input in diagnostics** — a diagnostic or a `ConversionError` names a line
+  and a column and never quotes the input, so logging one copies no message text
+  into the logs.
+
 ## Out of Scope
 
 - The behavior of the Telegram Bot API server itself: which messages it accepts,

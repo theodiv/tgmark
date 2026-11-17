@@ -29,6 +29,7 @@ classifiers = [
   "Topic :: Communications :: Chat",
   "Topic :: Text Processing :: Markup :: HTML",
   "Topic :: Text Processing :: Markup :: Markdown",
+  "Typing :: Typed",
 ]
 dependencies = []
 dynamic = ["version"]
@@ -36,6 +37,7 @@ dynamic = ["version"]
 [project.urls]
 "Bug Tracker" = "https://github.com/theodiv/tgmark/issues"
 Changelog = "https://github.com/theodiv/tgmark/blob/main/CHANGELOG.md"
+Documentation = "https://github.com/theodiv/tgmark/tree/main/docs"
 Repository = "https://github.com/theodiv/tgmark"
 
 [dependency-groups]
