@@ -47,6 +47,37 @@ body:
     validations:
       required: true
 
+  - type: dropdown
+    id: source-format
+    attributes:
+      label: Source format
+      description: The `source` the call passes.
+      options:
+        - plain
+    validations:
+      required: true
+
+  - type: dropdown
+    id: target
+    attributes:
+      label: Target
+      description: The `target` the call passes.
+      options:
+        - entities
+    validations:
+      required: true
+
+  - type: dropdown
+    id: mode
+    attributes:
+      label: Mode
+      description: Strict when the call passes `strict=True`, lenient otherwise.
+      options:
+        - Lenient
+        - Strict
+    validations:
+      required: true
+
   - type: textarea
     id: description
     attributes:

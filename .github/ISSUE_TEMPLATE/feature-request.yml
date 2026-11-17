@@ -26,6 +26,18 @@ body:
     validations:
       required: true
 
+  - type: dropdown
+    id: feature-area
+    attributes:
+      label: Feature area
+      description: The part of TGMark the feature concerns.
+      options:
+        - Input formats
+        - Output targets
+        - Diagnostics and strict mode
+    validations:
+      required: true
+
   - type: textarea
     id: problem-statement
     attributes:
