@@ -9,6 +9,9 @@ Every participant follows the [code of conduct](CODE_OF_CONDUCT.md).
 
 ## Development Setup
 
+Work from a clone of the repository: the sdist on PyPI holds the package alone,
+without the tests.
+
 ```bash
 python3 -m venv --upgrade-deps .venv
 source .venv/bin/activate
@@ -19,8 +22,7 @@ pre-commit install
 Activate `.venv` in each new terminal; the commands below assume it is active.
 
 The pre-commit hooks call the tools in `.venv`; a different environment name
-leaves them unable to run. `--upgrade-deps` provides pip 25.1 or later, which
-`--group` needs.
+leaves them unable to run. `--upgrade-deps` provides a pip that knows `--group`.
 
 ## Toolchain
 
@@ -31,6 +33,7 @@ leaves them unable to run. `--upgrade-deps` provides pip 25.1 or later, which
 | mypy                  | Strict type checks of `src/` and `tests/`                      |
 | zizmor                | Security checks of the workflows and `dependabot.yml`          |
 | pytest and pytest-cov | Tests and branch coverage                                      |
+| Hypothesis            | Generated test input, shrunk to the smallest failing case      |
 | TDLib Oracle          | The pinned Bot API server's verdicts, for `tests/oracle/`      |
 | pre-commit            | Hygiene hooks, Ruff, mypy, and zizmor on every commit          |
 
@@ -65,7 +68,9 @@ ruff format .
 ## Testing Standards
 
 - Tests must mirror `src/`: `tests/<domain>/test_<module>.py` for a domain
-  module, `tests/test_<module>.py` for a top-level module.
+  module, `tests/test_<module>.py` for a top-level module. Test code that
+  several test modules share, or that runs an external program or a server, must
+  live in `tests/support/`, with its tests beside it.
 - Every bug fix must add a regression test that fails on the unfixed code.
 - Tests must assert outcomes (outputs, lengths, exit codes, stderr lines), not
   that an internal call happened.

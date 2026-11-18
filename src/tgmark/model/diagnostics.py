@@ -9,7 +9,6 @@ and the position, so both describe one condition, each in its own terms.
 from dataclasses import dataclass
 
 from tgmark.model.document import Position
-from tgmark.model.server import MESSAGE_LENGTH
 
 
 @dataclass(frozen=True)
@@ -65,8 +64,13 @@ BLANK_TEXT = Condition(
     name="blank text",
     outcome="not sent",
 )
-TEXT_TOO_LONG = Condition(
-    code="text-too-long",
-    name=f"text over {MESSAGE_LENGTH} code points",
+CLUSTER_TOO_LONG = Condition(
+    code="cluster-too-long",
+    name="grapheme cluster over the length limit",
+    outcome="split between messages",
+)
+TRUNCATED = Condition(
+    code="truncated",
+    name="text past max_parts messages",
     outcome="not sent",
 )
