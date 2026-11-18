@@ -13,7 +13,7 @@ Public surface
 from tgmark.conversion import Conversion, Diagnostic, Message, convert
 from tgmark.exceptions import ConversionError, TGMarkError
 
-__version__ = "0.0.0"
+__version__ = "0.1.0"
 
 __all__ = [
     "Conversion",
