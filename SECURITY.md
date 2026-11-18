@@ -32,6 +32,9 @@ Report vulnerabilities privately; never open a public issue for one.
 - **Input in diagnostics** — a diagnostic or a `ConversionError` names a line
   and a column and never quotes the input, so logging one copies no message text
   into the logs.
+- **Message floods** — long input splits into as many messages as it needs, so
+  text from an untrusted source can make a bot send hundreds; `max_parts` caps
+  the count and drops the rest with a `truncated` diagnostic.
 
 ## Out of Scope
 
@@ -40,3 +43,8 @@ Report vulnerabilities privately; never open a public issue for one.
   [telegram-bot-api issue tracker](https://github.com/tdlib/telegram-bot-api/issues).
 - The caller's own files and code: the input the caller passes to TGMark, and
   what the caller does with the messages it returns.
+
+## Hardening
+
+- **Cap the message count** of text from an untrusted source: `max_parts` keeps
+  one input from flooding a chat or using up the bot's rate limit.

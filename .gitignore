@@ -12,6 +12,7 @@ __pycache__/
 
 # Testing and coverage
 .pytest_cache/
+.hypothesis/
 .coverage
 coverage.json
 coverage.xml

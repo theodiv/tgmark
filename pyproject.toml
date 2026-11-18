@@ -42,6 +42,7 @@ Repository = "https://github.com/theodiv/tgmark"
 
 [dependency-groups]
 dev = [
+  "hypothesis==6.170.15",
   "mypy==2.4.1",
   "pre-commit==4.7.0",
   "pytest==9.2.0",
@@ -68,6 +69,9 @@ fail_under = 90
 
 [tool.hatch.version]
 path = "src/tgmark/__init__.py"
+
+[tool.hatch.build.targets.sdist]
+only-include = ["src"]
 
 [tool.hatch.build.targets.wheel]
 packages = ["src/tgmark"]

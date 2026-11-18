@@ -1,18 +1,40 @@
 import re
-from typing import Any
+from typing import Any, TypedDict
 
 import pytest
+from hypothesis import given, settings
+from hypothesis import strategies as st
 
 from tests.oracle.telegram import check_message
 from tgmark import Conversion, ConversionError, Diagnostic, Message, convert
 from tgmark.model.server import BLANK, MESSAGE_LENGTH, REMOVED, SPACED, TRIMMED
 
 
-def _convert(text: str, *, strict: bool = False) -> Conversion:
+class _Limits(TypedDict, total=False):
+    """The limits a test passes to `convert`, each left at its default when absent."""
+
+    max_length: int
+    max_parts: int
+
+
+def _convert(
+    text: str,
+    *,
+    max_length: int | None = None,
+    max_parts: int | None = None,
+    strict: bool = False,
+) -> Conversion:
     """Convert plain `text`, passing each message through the checker."""
-    conversion = convert(text, source="plain", target="entities", strict=strict)
+    conversion = convert(
+        text,
+        source="plain",
+        target="entities",
+        max_length=max_length,
+        max_parts=max_parts,
+        strict=strict,
+    )
     for message in conversion.messages:
-        check_message(message.params())
+        check_message(message.params(), max_length=max_length)
     return conversion
 
 
@@ -171,16 +193,78 @@ def test_counts_the_length_after_removals() -> None:
     assert conversion.messages == (Message(text),)
 
 
-@pytest.mark.parametrize("length", [MESSAGE_LENGTH + 1, 25 * MESSAGE_LENGTH])
-def test_sends_no_message_of_text_past_the_limit(length: int) -> None:
-    # The first code point past the limit, offset 4096, stands at line 41, column 97 of
-    # lines of 99 letters.
+@pytest.mark.parametrize(
+    ("length", "messages"),
+    [
+        # Lines of 99 letters: 40 of them and their line feeds take 4,000 code points.
+        pytest.param(MESSAGE_LENGTH + 1, [40, 1], id="one-past"),
+        pytest.param(25 * MESSAGE_LENGTH, [40] * 25 + [24], id="far-past"),
+    ],
+)
+def test_splits_text_past_the_limit_at_line_breaks(
+    length: int, messages: list[int]
+) -> None:
     lines, rest = divmod(length, 100)
     text = ("a" * 99 + "\n") * lines + "a" * rest
+    conversion = _convert(text)
+    assert [message.text.count("\n") + 1 for message in conversion.messages] == messages
+    assert "\n".join(message.text for message in conversion.messages) == text.rstrip()
+    assert conversion.diagnostics == ()
+
+
+@pytest.mark.parametrize(
+    ("text", "max_length", "messages"),
+    [
+        pytest.param(
+            "First line.\nSecond line.",
+            12,
+            ["First line.", "Second line."],
+            id="line",
+        ),
+        pytest.param(
+            "Build passed. All tests ran.",
+            20,
+            ["Build passed.", "All tests ran."],
+            id="sentence",
+        ),
+        pytest.param(
+            "\N{WOMAN}\u200d\N{PERSONAL COMPUTER}\N{WOMAN}\u200d\N{PERSONAL COMPUTER}",
+            4,
+            ["\N{WOMAN}\u200d\N{PERSONAL COMPUTER}"] * 2,
+            id="zwj-sequences",
+        ),
+    ],
+)
+def test_holds_each_message_to_max_length(
+    text: str, max_length: int, messages: list[str]
+) -> None:
+    sent = tuple(Message(message) for message in messages)
+    assert _convert(text, max_length=max_length) == Conversion(sent, ())
+
+
+def test_splits_a_grapheme_cluster_longer_than_max_length() -> None:
     diagnostic = Diagnostic(
-        "text-too-long", "text over 4096 code points not sent", 41, 97
+        "cluster-too-long",
+        "grapheme cluster over the length limit split between messages",
+        1,
+        2,
     )
-    assert _convert(text) == Conversion((), (diagnostic,))
+    assert _convert("\U0001f1ec\U0001f1f7", max_length=1) == Conversion(
+        (Message("\U0001f1ec"), Message("\U0001f1f7")), (diagnostic,)
+    )
+
+
+def test_drops_the_text_past_max_parts() -> None:
+    diagnostic = Diagnostic("truncated", "text past max_parts messages not sent", 3, 1)
+    assert _convert("First\n\nSecond\n\nThird", max_length=6, max_parts=1) == (
+        Conversion((Message("First"),), (diagnostic,))
+    )
+
+
+def test_sends_every_message_when_max_parts_leaves_room() -> None:
+    assert _convert("First\n\nSecond", max_length=6, max_parts=2) == Conversion(
+        (Message("First"), Message("Second")), ()
+    )
 
 
 def test_strict_mode_returns_the_conversion_when_nothing_changes() -> None:
@@ -198,9 +282,32 @@ def test_strict_mode_raises_for_the_earliest_condition() -> None:
     assert (error.code, error.line, error.column) == ("control-character", 1, 3)
 
 
-def test_strict_mode_raises_for_text_lenient_mode_drops() -> None:
-    with pytest.raises(ConversionError, match=r"^blank text at line 1, column 1$"):
-        _convert("\u3000", strict=True)
+@pytest.mark.parametrize(
+    ("text", "options", "code", "message"),
+    [
+        pytest.param("\u3000", {}, "blank-text", "blank text", id="blank-text"),
+        pytest.param(
+            "First\n\nSecond",
+            {"max_length": 6, "max_parts": 1},
+            "truncated",
+            "text past max_parts messages",
+            id="truncated",
+        ),
+        pytest.param(
+            "\U0001f1ec\U0001f1f7",
+            {"max_length": 1},
+            "cluster-too-long",
+            "grapheme cluster over the length limit",
+            id="cluster-too-long",
+        ),
+    ],
+)
+def test_strict_mode_raises_for_text_lenient_mode_drops_or_splits(
+    text: str, options: _Limits, code: str, message: str
+) -> None:
+    with pytest.raises(ConversionError, match=rf"^{message} at line \d+, column \d+$"):
+        convert(text, source="plain", target="entities", strict=True, **options)
+    assert _convert(text, **options).diagnostics[0].code == code
 
 
 @pytest.mark.parametrize(
@@ -230,6 +337,42 @@ def test_strict_mode_raises_for_text_lenient_mode_drops() -> None:
         pytest.param(
             {"strict": 1}, TypeError, "strict must be bool, not int", id="strict-type"
         ),
+        pytest.param(
+            {"max_length": "1"},
+            TypeError,
+            "max_length must be int or None, not str",
+            id="max-length-type",
+        ),
+        pytest.param(
+            {"max_length": True},
+            TypeError,
+            "max_length must be int or None, not bool",
+            id="max-length-bool",
+        ),
+        pytest.param(
+            {"max_length": 0},
+            ValueError,
+            "max_length must be from 1 to 4096",
+            id="max-length-zero",
+        ),
+        pytest.param(
+            {"max_length": MESSAGE_LENGTH + 1},
+            ValueError,
+            "max_length must be from 1 to 4096",
+            id="max-length-past-the-limit",
+        ),
+        pytest.param(
+            {"max_parts": 1.0},
+            TypeError,
+            "max_parts must be int or None, not float",
+            id="max-parts-type",
+        ),
+        pytest.param(
+            {"max_parts": 0},
+            ValueError,
+            "max_parts must be at least 1",
+            id="max-parts-zero",
+        ),
     ],
 )
 def test_refuses_an_argument_of_the_wrong_type_or_value(
@@ -244,3 +387,54 @@ def test_refuses_an_argument_of_the_wrong_type_or_value(
     }
     with pytest.raises(error, match=f"^{re.escape(message)}$"):
         convert(**call)
+
+
+@pytest.mark.parametrize(
+    "options",
+    [
+        pytest.param({"max_length": 1, "max_parts": 1}, id="lowest"),
+        pytest.param({"max_length": MESSAGE_LENGTH, "max_parts": 10**9}, id="highest"),
+    ],
+)
+def test_accepts_max_length_and_max_parts_at_the_ends_of_their_ranges(
+    options: _Limits,
+) -> None:
+    assert _convert("a", **options) == _sent("a")
+
+
+# The pieces generated texts are made of: characters the server keeps, removes, or
+# replaces, a lone surrogate, every kind of place to cut, and clusters of every kind.
+_PIECES = (
+    "Total 42",
+    " ",
+    "\n",
+    "\r\n",
+    "\n\n",
+    "\t",
+    "\x00",
+    "\u2028",
+    "\u030a",
+    "\u200e\u200f",
+    "\ud800",
+    ". ",
+    "\u3002",
+    "e\u0301",
+    "\N{WOMAN}\u200d\N{PERSONAL COMPUTER}",
+    "\U0001f1ec\U0001f1f7",
+    "\u0915\u094d\u0937",
+    "\u3000",
+    "\u200b",
+)
+
+
+@settings(max_examples=300, deadline=None, database=None)
+@given(
+    text=st.lists(st.sampled_from(_PIECES) | st.characters(), max_size=60).map("".join),
+    max_length=st.none() | st.integers(1, 40),
+    max_parts=st.none() | st.integers(1, 5),
+)
+def test_sends_only_messages_the_server_keeps_whatever_the_text(
+    text: str, max_length: int | None, max_parts: int | None
+) -> None:
+    conversion = _convert(text, max_length=max_length, max_parts=max_parts)
+    assert max_parts is None or len(conversion.messages) <= max_parts

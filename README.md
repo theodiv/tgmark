@@ -17,16 +17,20 @@ records every change until then.
 ## Overview
 
 TGMark turns plain text into Telegram messages that the Bot API server accepts
-and keeps exactly as sent, and reports each change it makes to get there. It
-serves Python bot authors whose text comes from elsewhere, such as an LLM's
-reply or a script's output. Sending the messages stays with the caller's Bot
-API client.
+and keeps exactly as sent, split to fit its limits, and reports each change it
+makes to get there. It serves Python bot authors whose text comes from
+elsewhere, such as an LLM's reply or a script's output. Sending the messages
+stays with the caller's Bot API client.
 
 ## Features
 
 - **Kept as sent** — the characters the server removes or replaces are removed
   or replaced first, so the server keeps every message exactly as `convert`
   returns it.
+- **Split to fit** — text longer than one message splits at the last paragraph
+  break, line break, sentence end, or space that fits, and keeps flags, emoji
+  sequences, and accented letters whole wherever they fit; `max_length` lowers
+  the limit and `max_parts` caps the count.
 - **Every change reported** — each repair or removal comes back as a diagnostic
   with a stable code, a line, and a column, and never quotes the input.
 - **Strict mode** — `strict=True` raises `ConversionError` at the earliest

@@ -4,3 +4,6 @@
 *.md    diff=markdown
 *.py    diff=python
 *.sh    diff=bash
+
+# Test data
+tests/data/**     -text
