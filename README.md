@@ -8,12 +8,6 @@ Turn any text into messages Telegram never refuses.
 
 ---
 
-## Status
-
-Pre-release: TGMark is in development and nothing is published. The first
-release is `0.1.0`; the [changelog](https://github.com/theodiv/tgmark/blob/main/CHANGELOG.md)
-records every change until then.
-
 ## Overview
 
 TGMark turns plain text into Telegram messages that the Bot API server accepts
@@ -50,6 +44,12 @@ stays with the caller's Bot API client.
 ## Requirements
 
 Python 3.11 or later. No runtime dependencies.
+
+## Installation
+
+```console
+$ pip install tgmark
+```
 
 ## Documentation
 
