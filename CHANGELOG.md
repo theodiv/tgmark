@@ -7,6 +7,12 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+### Added
+
+- Accept `bytes` in `convert`, decoded in the encoding that a UTF-8, UTF-16BE,
+  or UTF-16LE byte order mark names, else as UTF-8. Each byte sequence the
+  encoding refuses becomes U+FFFD, with an `undecodable-bytes` diagnostic.
+
 ## [0.1.0] - 2026-11-18
 
 ### Added

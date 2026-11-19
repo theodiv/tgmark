@@ -25,6 +25,10 @@ stays with the caller's Bot API client.
   break, line break, sentence end, or space that fits, and keeps flags, emoji
   sequences, and accented letters whole wherever they fit; `max_length` lowers
   the limit and `max_parts` caps the count.
+- **Bytes as read** — `bytes` decode in the encoding their byte order mark
+  names, UTF-8, UTF-16BE, or UTF-16LE, else as UTF-8, so a file or a pipe
+  converts as read; each byte sequence the encoding refuses becomes U+FFFD with
+  a diagnostic.
 - **Every change reported** — each repair or removal comes back as a diagnostic
   with a stable code, a line, and a column, and never quotes the input.
 - **Strict mode** — `strict=True` raises `ConversionError` at the earliest
