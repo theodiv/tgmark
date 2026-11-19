@@ -40,6 +40,9 @@ Changelog = "https://github.com/theodiv/tgmark/blob/main/CHANGELOG.md"
 Documentation = "https://github.com/theodiv/tgmark/tree/main/docs"
 Repository = "https://github.com/theodiv/tgmark"
 
+[project.scripts]
+tgmark = "tgmark.__main__:main"
+
 [dependency-groups]
 dev = [
   "hypothesis==6.170.15",

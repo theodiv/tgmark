@@ -18,8 +18,8 @@ from tgmark.parse.decoding import decode_bytes, replace_surrogates
 from tgmark.parse.plain import read_plain
 
 # The values `source` and `target` take.
-_SOURCES = ("plain",)
-_TARGETS = ("entities",)
+SOURCES = ("plain",)
+TARGETS = ("entities",)
 
 
 @dataclass(frozen=True)
@@ -146,8 +146,8 @@ def _check_arguments(
     """Raise for an argument of `convert` of the wrong type or value."""
     if not isinstance(text, (str, bytes)):
         raise TypeError(f"text must be str or bytes, not {type(text).__name__}")
-    _check_choice("source", source, _SOURCES)
-    _check_choice("target", target, _TARGETS)
+    _check_choice("source", source, SOURCES)
+    _check_choice("target", target, TARGETS)
     _check_count("max_length", max_length, MESSAGE_LENGTH)
     _check_count("max_parts", max_parts, None)
     if not isinstance(strict, bool):

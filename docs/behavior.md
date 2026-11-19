@@ -31,6 +31,7 @@ The steps run in this order:
 | ---                      | ---                                 | ---                                             |
 | Kept text of a message   | 4,096 code points, or `max_length`  | Split into another message                      |
 | Messages of a conversion | `max_parts`, with no cap by default | The rest dropped, with a `truncated` diagnostic |
+| Input the command reads  | 4 MiB                               | Refused, with exit code `65`                    |
 
 ## Guarantees
 
@@ -47,7 +48,8 @@ The steps run in this order:
 - Only the steps in Processing lose or change text, and each step but 1, 4, 8,
   and 9 reports every change it makes as a diagnostic.
 - A diagnostic or a `ConversionError` names a line and a column of the input and
-  never quotes its text.
+  never quotes its text; an error line of the command names `FILE` by at most
+  its last 32 characters, each non-printable character escaped.
 - Outside strict mode, `convert` raises only `TypeError` and `ValueError`, for
   its arguments.
 - Time and memory grow linearly with the length of the input.
@@ -57,7 +59,7 @@ Threats and how to report them: [`SECURITY.md`](../SECURITY.md).
 ## Out of Scope
 
 - Sending messages, and any network access — the caller's Bot API client sends
-  what `Message.params()` returns.
+  what `Message.params()` returns or the command writes.
 - Media, keyboards, link previews, and every other send parameter — the caller
   adds them to what `Message.params()` returns.
 - Converting partial input as it streams in — the caller converts the whole text
