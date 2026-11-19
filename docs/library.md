@@ -42,13 +42,16 @@ One Telegram message, as the Bot API server keeps it.
 ## `convert`
 
 ```python
-convert(text: str, *, source: Literal["plain"], target: Literal["entities"], max_length: int | None = None, max_parts: int | None = None, strict: bool = False) -> Conversion
+convert(text: str | bytes, *, source: Literal["plain"], target: Literal["entities"], max_length: int | None = None, max_parts: int | None = None, strict: bool = False) -> Conversion
 ```
 
 Converts `text` into Telegram messages that the Bot API server keeps exactly as
 sent, splitting text too long for one message.
 
-- `text` — the text to convert.
+- `text` — the text to convert: a `str`, or `bytes` in the encoding their byte
+  order mark names, UTF-8, UTF-16BE, or UTF-16LE, else in UTF-8; a diagnostic's
+  `line` and `column` then count the decoded text. *Changed in the next release:
+  also takes `bytes`.*
 - `source` — the format of `text`: `"plain"` reads every character as
   written; required.
 - `target` — the form of each message: `"entities"` sends its text with no parse
@@ -71,6 +74,10 @@ lenient mode would repair or drop anything.
 Conversion(messages=(Message(text='Total: 42'),), diagnostics=(Diagnostic(code='control-character', message='control character replaced with a space', line=1, column=7),))
 >>> convert("First line.\nSecond line.", source="plain", target="entities", max_length=12)
 Conversion(messages=(Message(text='First line.'), Message(text='Second line.')), diagnostics=())
+>>> convert(b"\xef\xbb\xbfTotal: 42\r\n", source="plain", target="entities")
+Conversion(messages=(Message(text='Total: 42'),), diagnostics=())
+>>> convert(b"Caf\xe9", source="plain", target="entities").diagnostics
+(Diagnostic(code='undecodable-bytes', message='undecodable bytes replaced with U+FFFD', line=1, column=4),)
 ```
 
 ## Exceptions

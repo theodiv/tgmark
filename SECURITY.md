@@ -29,6 +29,10 @@ Report vulnerabilities privately; never open a public issue for one.
 - **Unbounded work** — conversion runs in time and memory linear in the input,
   with no recursion and no regular expression with nested quantifiers, so a long
   or crafted text cannot stall the caller.
+- **Malformed bytes** — `bytes` from a mislabeled or binary file can hold
+  sequences their encoding refuses. Each becomes U+FFFD with an
+  `undecodable-bytes` diagnostic, so decoding never raises and no message
+  carries text the server refuses as invalid UTF-8.
 - **Input in diagnostics** — a diagnostic or a `ConversionError` names a line
   and a column and never quotes the input, so logging one copies no message text
   into the logs.

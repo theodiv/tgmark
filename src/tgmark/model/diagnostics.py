@@ -39,6 +39,11 @@ class Notice:
     position: Position
 
 
+UNDECODABLE_BYTES = Condition(
+    code="undecodable-bytes",
+    name="undecodable bytes",
+    outcome="replaced with U+FFFD",
+)
 LONE_SURROGATE = Condition(
     code="lone-surrogate",
     name="lone surrogate",

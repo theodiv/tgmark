@@ -14,7 +14,7 @@ from tgmark.fit.parts import fit_text
 from tgmark.lower.table import lower_document
 from tgmark.model.diagnostics import Notice
 from tgmark.model.server import MESSAGE_LENGTH
-from tgmark.parse.decoding import replace_surrogates
+from tgmark.parse.decoding import decode_bytes, replace_surrogates
 from tgmark.parse.plain import read_plain
 
 # The values `source` and `target` take.
@@ -76,7 +76,7 @@ class Conversion:
 
 
 def convert(
-    text: str,
+    text: str | bytes,
     *,
     source: Literal["plain"],
     target: Literal["entities"],
@@ -93,7 +93,9 @@ def convert(
     are keyword-only so that a new option never changes the meaning of an existing call.
 
     Args:
-        text: The text to convert.
+        text: The text to convert: a `str`, or `bytes` in the encoding their byte order
+            mark names, UTF-8, UTF-16BE, or UTF-16LE, else in UTF-8. Diagnostics count
+            lines and columns in the decoded text, from just past the mark.
         source: The format of `text`: `plain` reads every character as written.
         target: The form of each message: `entities` sends its text with no parse mode.
         max_length: The most code points the text of each message keeps, from 1 to
@@ -103,8 +105,9 @@ def convert(
         strict: Whether to raise `ConversionError` instead of repairing or dropping.
 
     Raises:
-        TypeError: If `text`, `source`, or `target` is not a `str`, `max_length` or
-            `max_parts` is neither an `int` nor `None`, or `strict` is not a `bool`.
+        TypeError: If `text` is neither a `str` nor `bytes`, `source` or `target` is not
+            a `str`, `max_length` or `max_parts` is neither an `int` nor `None`, or
+            `strict` is not a `bool`.
         ValueError: If `source` or `target` names a format other than those above, or
             `max_length` or `max_parts` is out of its range.
         ConversionError: If `strict` is set and lenient mode would repair or
@@ -112,7 +115,9 @@ def convert(
     """
     _check_arguments(text, source, target, max_length, max_parts, strict)
 
-    valid, decoding = replace_surrogates(text)
+    valid, decoding = (
+        decode_bytes(text) if isinstance(text, bytes) else replace_surrogates(text)
+    )
     formatted, lowering = lower_document(read_plain(valid))
     parts, fitting = fit_text(
         formatted,
@@ -139,8 +144,8 @@ def _check_arguments(
     strict: object,
 ) -> None:
     """Raise for an argument of `convert` of the wrong type or value."""
-    if not isinstance(text, str):
-        raise TypeError(f"text must be str, not {type(text).__name__}")
+    if not isinstance(text, (str, bytes)):
+        raise TypeError(f"text must be str or bytes, not {type(text).__name__}")
     _check_choice("source", source, _SOURCES)
     _check_choice("target", target, _TARGETS)
     _check_count("max_length", max_length, MESSAGE_LENGTH)
