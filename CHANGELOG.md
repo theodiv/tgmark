@@ -12,6 +12,9 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Accept `bytes` in `convert`, decoded in the encoding that a UTF-8, UTF-16BE,
   or UTF-16LE byte order mark names, else as UTF-8. Each byte sequence the
   encoding refuses becomes U+FFFD, with an `undecodable-bytes` diagnostic.
+- Add the `tgmark` command, which converts a file or stdin of up to 4 MiB and
+  writes each message's Bot API parameters to stdout as a line of JSON, with
+  each diagnostic on stderr as a warning line that ends in its code.
 
 ## [0.1.0] - 2026-11-18
 

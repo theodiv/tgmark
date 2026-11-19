@@ -28,7 +28,8 @@ Report vulnerabilities privately; never open a public issue for one.
 
 - **Unbounded work** — conversion runs in time and memory linear in the input,
   with no recursion and no regular expression with nested quantifiers, so a long
-  or crafted text cannot stall the caller.
+  or crafted text cannot stall the caller; the command reads at most 4 MiB of a
+  file or stdin and refuses more, so endless input cannot use up memory.
 - **Malformed bytes** — `bytes` from a mislabeled or binary file can hold
   sequences their encoding refuses. Each becomes U+FFFD with an
   `undecodable-bytes` diagnostic, so decoding never raises and no message
@@ -36,6 +37,11 @@ Report vulnerabilities privately; never open a public issue for one.
 - **Input in diagnostics** — a diagnostic or a `ConversionError` names a line
   and a column and never quotes the input, so logging one copies no message text
   into the logs.
+- **Terminal injection** — converted text keeps the C1 control characters the
+  server keeps, which some terminals read as escape sequences. The command
+  writes its JSON in ASCII, each other character escaped, and its diagnostic
+  lines quote no input and escape each non-printable character of a path, so its
+  output brings no escape sequence to a terminal.
 - **Message floods** — long input splits into as many messages as it needs, so
   text from an untrusted source can make a bot send hundreds; `max_parts` caps
   the count and drops the rest with a `truncated` diagnostic.

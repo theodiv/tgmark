@@ -19,7 +19,7 @@ body:
     id: version
     attributes:
       label: TGMark version
-      description: Output of `pip show tgmark`.
+      description: Output of `tgmark --version` or `pip show tgmark`.
     validations:
       required: true
 
@@ -43,7 +43,7 @@ body:
     id: installation-method
     attributes:
       label: Installation method
-      placeholder: pip or a local clone
+      placeholder: pip, pipx, or a local clone
     validations:
       required: true
 
@@ -51,7 +51,7 @@ body:
     id: source-format
     attributes:
       label: Source format
-      description: The `source` the call passes.
+      description: The `source` the call passes, or the command's `--source`.
       options:
         - plain
     validations:
@@ -61,7 +61,7 @@ body:
     id: target
     attributes:
       label: Target
-      description: The `target` the call passes.
+      description: The `target` the call passes, or the command's `--target`.
       options:
         - entities
     validations:

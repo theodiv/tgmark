@@ -13,8 +13,9 @@ Turn any text into messages Telegram never refuses.
 TGMark turns plain text into Telegram messages that the Bot API server accepts
 and keeps exactly as sent, split to fit its limits, and reports each change it
 makes to get there. It serves Python bot authors whose text comes from
-elsewhere, such as an LLM's reply or a script's output. Sending the messages
-stays with the caller's Bot API client.
+elsewhere, such as an LLM's reply, and scripts that post CI results or
+monitoring alerts, through the `tgmark` command. Sending the messages stays with
+the caller's Bot API client.
 
 ## Features
 
@@ -33,6 +34,9 @@ stays with the caller's Bot API client.
   with a stable code, a line, and a column, and never quotes the input.
 - **Strict mode** — `strict=True` raises `ConversionError` at the earliest
   change instead, for text that must arrive as written.
+- **Command line** — `tgmark` converts a file or stdin and writes each message's
+  Bot API parameters to stdout as a line of JSON, with each diagnostic
+  on stderr.
 
 ## Example
 
@@ -55,10 +59,18 @@ Python 3.11 or later. No runtime dependencies.
 $ pip install tgmark
 ```
 
+`pipx` installs the `tgmark` command in an environment of its own:
+
+```console
+$ pipx install tgmark
+```
+
 ## Documentation
 
 - [Library](https://github.com/theodiv/tgmark/blob/main/docs/library.md) — every
   public name, with its parameters, return value, and exceptions.
+- [Command Line](https://github.com/theodiv/tgmark/blob/main/docs/cli.md) —
+  the `tgmark` command: its usage, output, and exit codes.
 - [Behavior](https://github.com/theodiv/tgmark/blob/main/docs/behavior.md) —
   what happens to the input, step by step, and the limits on it.
 - [Compatibility](https://github.com/theodiv/tgmark/blob/main/docs/compatibility.md) —

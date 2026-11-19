@@ -22,7 +22,7 @@ body:
     id: version
     attributes:
       label: TGMark version
-      description: Output of `pip show tgmark`.
+      description: Output of `tgmark --version` or `pip show tgmark`.
     validations:
       required: true
 
@@ -36,6 +36,7 @@ body:
         - Output targets
         - Splitting and limits
         - Diagnostics and strict mode
+        - Command line
     validations:
       required: true
 
