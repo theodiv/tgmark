@@ -21,6 +21,9 @@ from tgmark.parse.plain import read_plain
 SOURCES = ("plain",)
 TARGETS = ("entities",)
 
+# The highest `max_length`, and the one it defaults to: the server's limit.
+MAX_LENGTH = MESSAGE_LENGTH
+
 
 @dataclass(frozen=True)
 class Diagnostic:
@@ -121,7 +124,7 @@ def convert(
     formatted, lowering = lower_document(read_plain(valid))
     parts, fitting = fit_text(
         formatted,
-        max_length=MESSAGE_LENGTH if max_length is None else max_length,
+        max_length=MAX_LENGTH if max_length is None else max_length,
         max_parts=max_parts,
     )
 
@@ -148,7 +151,7 @@ def _check_arguments(
         raise TypeError(f"text must be str or bytes, not {type(text).__name__}")
     _check_choice("source", source, SOURCES)
     _check_choice("target", target, TARGETS)
-    _check_count("max_length", max_length, MESSAGE_LENGTH)
+    _check_count("max_length", max_length, MAX_LENGTH)
     _check_count("max_parts", max_parts, None)
     if not isinstance(strict, bool):
         raise TypeError(f"strict must be bool, not {type(strict).__name__}")

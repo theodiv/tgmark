@@ -15,6 +15,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Add the `tgmark` command, which converts a file or stdin of up to 4 MiB and
   writes each message's Bot API parameters to stdout as a line of JSON, with
   each diagnostic on stderr as a warning line that ends in its code.
+  `--max-length`, `--max-parts`, and `--strict` set the options of `convert`
+  they name, and `--strict` exits `65` at the earliest condition.
 
 ## [0.1.0] - 2026-11-18
 

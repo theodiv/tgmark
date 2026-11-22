@@ -20,6 +20,12 @@ _LIMIT = 4 * 1024 * 1024
 # The source and target every conversion below names.
 _FORMATS = ("--source", "plain", "--target", "entities")
 
+# The error lines for a refused --max-length and a refused --max-parts.
+_LENGTH_REFUSED = (
+    "tgmark: error: argument -l/--max-length: must be an integer from 1 to 4096"
+)
+_PARTS_REFUSED = "tgmark: error: argument -p/--max-parts: must be a positive integer"
+
 
 class _BrokenStream(BytesIO):
     """A stream whose every read fails, as a read from a failing disk does."""
@@ -33,17 +39,18 @@ def _stdin(monkeypatch: pytest.MonkeyPatch, data: bytes) -> None:
     monkeypatch.setattr(sys, "stdin", TextIOWrapper(BytesIO(data), encoding="utf-8"))
 
 
-def _messages(out: bytes) -> list[dict[str, object]]:
+def _messages(out: bytes, *, max_length: int | None = None) -> list[dict[str, object]]:
     """Return the messages the command wrote, each passed through the checker.
 
-    The output must be ASCII, one JSON object per line, each line ending in a line feed.
+    The output must be ASCII, one JSON object per line, each line ending in a line feed,
+    and each message must keep at most `max_length` code points of text, if given.
     """
     assert out.isascii()
     lines = out.decode("ascii").split("\n")
     assert lines.pop() == ""
     messages = [json.loads(line) for line in lines]
     for params in messages:
-        check_message(params)
+        check_message(params, max_length=max_length)
     return messages
 
 
@@ -131,6 +138,100 @@ def test_writes_nothing_for_input_without_text(
     _stdin(monkeypatch, data)
     assert main(list(_FORMATS)) == 0
     assert capfdbinary.readouterr() == (b"", b"")
+
+
+@pytest.mark.parametrize(
+    ("max_length", "text", "messages"),
+    [
+        pytest.param("1", "ab", ["a", "b"], id="lowest"),
+        pytest.param(
+            "12",
+            "First line.\nSecond line.\n",
+            ["First line.", "Second line."],
+            id="line-break",
+        ),
+        pytest.param("4096", "a" * 4097, ["a" * 4096, "a"], id="highest"),
+    ],
+)
+def test_holds_each_message_to_max_length(
+    max_length: str,
+    text: str,
+    messages: list[str],
+    monkeypatch: pytest.MonkeyPatch,
+    capfdbinary: pytest.CaptureFixture[bytes],
+) -> None:
+    _stdin(monkeypatch, text.encode())
+    assert main([*_FORMATS, "--max-length", max_length]) == 0
+    out, err = capfdbinary.readouterr()
+    sent = [{"text": message} for message in messages]
+    assert (_messages(out, max_length=int(max_length)), err) == (sent, b"")
+
+
+@pytest.mark.parametrize(
+    "arguments",
+    [
+        pytest.param(["--max-length", "12", "--max-parts", "1"], id="long-flags"),
+        pytest.param(["-l", "12", "-p", "1"], id="short-flags"),
+    ],
+)
+def test_drops_the_text_past_max_parts_with_a_warning_line(
+    arguments: list[str],
+    monkeypatch: pytest.MonkeyPatch,
+    capfdbinary: pytest.CaptureFixture[bytes],
+) -> None:
+    _stdin(monkeypatch, b"First line.\nSecond line.\n")
+    assert main([*_FORMATS, *arguments]) == 0
+    out, err = capfdbinary.readouterr()
+    assert _messages(out, max_length=12) == [{"text": "First line."}]
+    assert err == (
+        b"tgmark: warning: text past the message cap not sent at line 2, column 1 "
+        b"[truncated]\n"
+    )
+
+
+@pytest.mark.parametrize(
+    ("arguments", "data", "line"),
+    [
+        pytest.param(
+            ["--strict"],
+            b"Build #42:\tpassed\nCaf\xe9\n",
+            "control character at line 1, column 11 [control-character]",
+            id="earliest",
+        ),
+        pytest.param(
+            ["-S"],
+            b"Build #42:\tpassed\nCaf\xe9\n",
+            "control character at line 1, column 11 [control-character]",
+            id="short-flag",
+        ),
+        pytest.param(
+            ["--strict", "--max-length", "12", "--max-parts", "1"],
+            b"First line.\nSecond line.\n",
+            "text past the message cap at line 2, column 1 [truncated]",
+            id="truncated",
+        ),
+    ],
+)
+def test_strict_mode_refuses_the_input_at_its_earliest_condition(
+    arguments: list[str],
+    data: bytes,
+    line: str,
+    monkeypatch: pytest.MonkeyPatch,
+    capfdbinary: pytest.CaptureFixture[bytes],
+) -> None:
+    _stdin(monkeypatch, data)
+    assert main([*_FORMATS, *arguments]) == 65
+    assert capfdbinary.readouterr() == (b"", f"tgmark: error: {line}\n".encode())
+
+
+def test_strict_mode_converts_input_it_leaves_unchanged(
+    monkeypatch: pytest.MonkeyPatch, capfdbinary: pytest.CaptureFixture[bytes]
+) -> None:
+    # The line ending becomes a line feed and is trimmed, neither with a diagnostic.
+    _stdin(monkeypatch, b"Build #42 passed\r\n")
+    assert main([*_FORMATS, "--strict"]) == 0
+    out, err = capfdbinary.readouterr()
+    assert (_messages(out), err) == ([{"text": "Build #42 passed"}], b"")
 
 
 def test_converts_input_of_4_mib(
@@ -286,6 +387,7 @@ def test_reports_a_failure_it_does_not_expect_in_one_line(
         pytest.param(["--sou", "plain", "--target", "entities"], id="abbreviation"),
         pytest.param([*_FORMATS, "--bogus"], id="unknown-flag"),
         pytest.param([*_FORMATS, "a.txt", "b.txt"], id="two-files"),
+        pytest.param([*_FORMATS, "--max-length"], id="no-count"),
     ],
 )
 def test_refuses_arguments_it_does_not_take(
@@ -297,6 +399,70 @@ def test_refuses_arguments_it_does_not_take(
     out, err = capfdbinary.readouterr()
     assert out == b""
     assert err.decode().splitlines()[-1].startswith("tgmark: error: ")
+
+
+def _refusal(flag: str, value: str, capfd: pytest.CaptureFixture[bytes]) -> str:
+    """Return the last line of stderr once the command refuses `value` for `flag`.
+
+    The command must exit with code 2, write nothing to stdout, and never quote `value`.
+    """
+    with pytest.raises(SystemExit) as exit_info:
+        main([*_FORMATS, flag, value])
+    assert exit_info.value.code == 2
+    out, err = capfd.readouterr()
+    assert out == b""
+    assert repr(value) not in err.decode()
+    return err.decode().splitlines()[-1]
+
+
+@pytest.mark.parametrize(
+    "value",
+    [
+        pytest.param("0", id="zero"),
+        pytest.param("4097", id="over-4096"),
+        pytest.param("-1", id="negative"),
+        pytest.param("1.5", id="fraction"),
+        pytest.param("twelve", id="word"),
+        pytest.param("", id="empty"),
+        pytest.param("9" * 5000, id="5000-digits"),
+    ],
+)
+def test_refuses_a_max_length_outside_1_to_4096(
+    value: str, capfdbinary: pytest.CaptureFixture[bytes]
+) -> None:
+    assert _refusal("--max-length", value, capfdbinary) == _LENGTH_REFUSED
+
+
+@pytest.mark.parametrize(
+    "value",
+    [
+        pytest.param("0", id="zero"),
+        pytest.param("-1", id="negative"),
+        pytest.param("two", id="word"),
+    ],
+)
+def test_refuses_a_max_parts_below_1(
+    value: str, capfdbinary: pytest.CaptureFixture[bytes]
+) -> None:
+    assert _refusal("--max-parts", value, capfdbinary) == _PARTS_REFUSED
+
+
+@pytest.mark.parametrize(
+    ("flag", "line"),
+    [
+        pytest.param("-l", _LENGTH_REFUSED, id="max-length"),
+        pytest.param("-p", _PARTS_REFUSED, id="max-parts"),
+    ],
+)
+def test_refuses_a_count_before_reading_the_input(
+    flag: str,
+    line: str,
+    monkeypatch: pytest.MonkeyPatch,
+    capfdbinary: pytest.CaptureFixture[bytes],
+) -> None:
+    # A read from this stdin fails with exit code 74, so code 2 shows none was tried.
+    monkeypatch.setattr(sys, "stdin", TextIOWrapper(_BrokenStream(), encoding="utf-8"))
+    assert _refusal(flag, "0", capfdbinary) == line
 
 
 @pytest.fixture

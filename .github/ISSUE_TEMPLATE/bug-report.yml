@@ -71,7 +71,9 @@ body:
     id: mode
     attributes:
       label: Mode
-      description: Strict when the call passes `strict=True`, lenient otherwise.
+      description: >-
+        Strict when the call passes `strict=True` or the command gets
+        `--strict`, lenient otherwise.
       options:
         - Lenient
         - Strict

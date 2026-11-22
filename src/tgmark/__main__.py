@@ -9,11 +9,12 @@ import argparse
 import json
 import os
 import sys
-from collections.abc import Sequence
+from collections.abc import Callable, Sequence
 from contextlib import nullcontext
 
 from tgmark import __version__
-from tgmark.conversion import SOURCES, TARGETS, convert
+from tgmark.conversion import MAX_LENGTH, SOURCES, TARGETS, convert
+from tgmark.exceptions import ConversionError
 
 # The most input the command reads, in MiB; more is refused, so endless input cannot use
 # up the memory.
@@ -67,12 +68,64 @@ def _parser() -> argparse.ArgumentParser:
         help="the form of each message: %(choices)s",
     )
     parser.add_argument(
+        "-l",
+        "--max-length",
+        type=_count(MAX_LENGTH),
+        metavar="N",
+        help=(
+            f"the most code points a message keeps, from 1 to {MAX_LENGTH}; "
+            f"{MAX_LENGTH} when absent"
+        ),
+    )
+    parser.add_argument(
+        "-p",
+        "--max-parts",
+        type=_count(None),
+        metavar="N",
+        help=(
+            "the most messages to write, dropping the text past them; "
+            "no cap when absent"
+        ),
+    )
+    parser.add_argument(
+        "-S",
+        "--strict",
+        action="store_true",
+        help=(
+            f"refuse the input with exit code {_EX_DATAERR} instead of repairing or "
+            "dropping anything"
+        ),
+    )
+    parser.add_argument(
         "-h", "--help", action="help", help="show this help message and exit"
     )
     parser.add_argument(
         "-V", "--version", action="version", version=f"%(prog)s {__version__}"
     )
     return parser
+
+
+def _count(highest: int | None) -> Callable[[str], int]:
+    """Return the parser of a count flag's value, an integer from 1 up to `highest`.
+
+    A `highest` of `None` sets no upper bound. `argparse` reports a value the parser
+    refuses as a usage error that names the flag, and its message never quotes the
+    value, since a flag's value is input as much as the text is.
+    """
+    expected = (
+        "a positive integer" if highest is None else f"an integer from 1 to {highest}"
+    )
+
+    def parse(value: str) -> int:
+        try:
+            count = int(value)
+        except ValueError:
+            raise argparse.ArgumentTypeError(f"must be {expected}") from None
+        if count < 1 or (highest is not None and count > highest):
+            raise argparse.ArgumentTypeError(f"must be {expected}")
+        return count
+
+    return parse
 
 
 def _error(message: str) -> None:
@@ -140,7 +193,18 @@ def _run(arguments: argparse.Namespace) -> int:
         _error(f"{name} is larger than {_LIMIT_MIB} MiB")
         return _EX_DATAERR
 
-    conversion = convert(data, source=arguments.source, target=arguments.target)
+    try:
+        conversion = convert(
+            data,
+            source=arguments.source,
+            target=arguments.target,
+            max_length=arguments.max_length,
+            max_parts=arguments.max_parts,
+            strict=arguments.strict,
+        )
+    except ConversionError as exc:
+        _error(f"{exc} [{exc.code}]")
+        return _EX_DATAERR
     for diagnostic in conversion.diagnostics:
         _warn(
             f"{diagnostic.message} at line {diagnostic.line}, "

@@ -34,9 +34,9 @@ the caller's Bot API client.
   with a stable code, a line, and a column, and never quotes the input.
 - **Strict mode** — `strict=True` raises `ConversionError` at the earliest
   change instead, for text that must arrive as written.
-- **Command line** — `tgmark` converts a file or stdin and writes each message's
-  Bot API parameters to stdout as a line of JSON, with each diagnostic
-  on stderr.
+- **Command line** — `tgmark` takes a flag for each option of `convert`,
+  converts a file or stdin, and writes each message's Bot API parameters to
+  stdout as a line of JSON, with each diagnostic on stderr.
 
 ## Example
 
