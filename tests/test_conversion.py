@@ -317,7 +317,7 @@ def test_splits_a_grapheme_cluster_longer_than_max_length() -> None:
 
 
 def test_drops_the_text_past_max_parts() -> None:
-    diagnostic = Diagnostic("truncated", "text past max_parts messages not sent", 3, 1)
+    diagnostic = Diagnostic("truncated", "text past the message cap not sent", 3, 1)
     assert _convert("First\n\nSecond\n\nThird", max_length=6, max_parts=1) == (
         Conversion((Message("First"),), (diagnostic,))
     )
@@ -359,7 +359,7 @@ def test_strict_mode_raises_for_undecodable_bytes() -> None:
             "First\n\nSecond",
             {"max_length": 6, "max_parts": 1},
             "truncated",
-            "text past max_parts messages",
+            "text past the message cap",
             id="truncated",
         ),
         pytest.param(

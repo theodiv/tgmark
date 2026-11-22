@@ -43,8 +43,9 @@ Report vulnerabilities privately; never open a public issue for one.
   lines quote no input and escape each non-printable character of a path, so its
   output brings no escape sequence to a terminal.
 - **Message floods** — long input splits into as many messages as it needs, so
-  text from an untrusted source can make a bot send hundreds; `max_parts` caps
-  the count and drops the rest with a `truncated` diagnostic.
+  text from an untrusted source can make a bot send hundreds; `max_parts`, or
+  the command's `--max-parts`, caps the count and drops the rest with a
+  `truncated` diagnostic.
 
 ## Out of Scope
 
@@ -56,5 +57,6 @@ Report vulnerabilities privately; never open a public issue for one.
 
 ## Hardening
 
-- **Cap the message count** of text from an untrusted source: `max_parts` keeps
-  one input from flooding a chat or using up the bot's rate limit.
+- **Cap the message count** of text from an untrusted source: `max_parts`, or
+  `--max-parts` in the command, keeps one input from flooding a chat or using up
+  the bot's rate limit.

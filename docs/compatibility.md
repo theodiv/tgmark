@@ -23,14 +23,16 @@ new behavior.
 - Names that start with `_`, and behavior these pages do not describe.
 - The wording of exception messages.
 - The wording of a diagnostic's `message`, and of a diagnostic line after its
-  prefix, apart from the code in brackets that ends a warning line.
+  prefix, apart from the code in brackets that ends a warning line or the error
+  line of `--strict`.
 - Development releases (`.devN`) and release candidates (`rcN`).
 
 ## Diagnostic Codes
 
 A diagnostic code keeps its name and its condition once released: no release
 renames, removes, or reuses one, and each warning line of the command ends with
-the code of the diagnostic it reports, in brackets.
+the code of the diagnostic it reports, in brackets, as does the error line
+of `--strict`.
 
 ## Python Versions
 

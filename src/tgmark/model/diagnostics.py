@@ -76,6 +76,6 @@ CLUSTER_TOO_LONG = Condition(
 )
 TRUNCATED = Condition(
     code="truncated",
-    name="text past max_parts messages",
+    name="text past the message cap",
     outcome="not sent",
 )
