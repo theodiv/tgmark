@@ -32,31 +32,28 @@ Writes each message's Bot API parameters to stdout as a line of JSON.
 
 ## Options
 
-- `-s`, `--source` — passed to `convert` as
-  `source` ([Library](library.md#convert)).
-- `-t`, `--target` — passed to `convert` as
-  `target` ([Library](library.md#convert)).
-- `-l`, `--max-length` — passed to `convert` as
-  `max_length` ([Library](library.md#convert)).
-- `-p`, `--max-parts` — passed to `convert` as
-  `max_parts` ([Library](library.md#convert)).
-- `-S`, `--strict` — passed to `convert` as `strict=True`
-  ([Library](library.md#convert)); the condition at the earliest input position
-  ends the command with one error line and exit code `65`, and nothing
-  reaches stdout.
+- `-s`, `--source` — passed to `convert` as `source`.
+- `-t`, `--target` — passed to `convert` as `target`.
+- `-l`, `--max-length` — passed to `convert` as `max_length`.
+- `-p`, `--max-parts` — passed to `convert` as `max_parts`.
+- `-S`, `--strict` — passed to `convert` as `strict=True`; the condition at the
+  earliest input position ends the command with one error line and exit code
+  `65`, and nothing reaches stdout.
+
+What each parameter means: [`convert`](library.md#convert).
 
 ## Input
 
 `FILE`, or stdin when `FILE` is absent or `-`, as bytes: at most 4 MiB, decoded
-as `convert` decodes `bytes` ([Library](library.md#convert)), whatever the
-locale. More than 4 MiB is refused with exit code `65`.
+as `convert` decodes `bytes`, whatever the locale. More than 4 MiB is refused
+with exit code `65`.
 
 ## Output
 
-One line of JSON per message on stdout, in order: the object `Message.params()`
-returns ([Library](library.md#message)), in ASCII, each other character escaped
-as `\uXXXX`, or as two of them past U+FFFF. Nothing when no message remains to
-send, or when `--strict` refuses the input.
+One line of JSON per message on stdout, in order: the object
+[`Message.params()`](library.md#message) returns, in ASCII, each other character
+escaped as `\uXXXX`, or as two of them past U+FFFF. Nothing when no message
+remains to send, or when `--strict` refuses the input.
 
 ## Exit Codes
 
@@ -76,13 +73,13 @@ send, or when `--strict` refuses the input.
 | `tgmark: error: `   | A failure that sets a non-zero exit code    |
 | `tgmark: warning: ` | A condition that leaves the exit code alone |
 
-A warning line reports one diagnostic of the conversion
-([Library](library.md#diagnostic)): its message, its line and column, and its
-code in brackets. Under `--strict`, the one error line reports the condition
-that refuses the input: its name, its line and column, and its code in brackets.
-An error line names what failed, and a path in it shows at most its last 32
-characters, each non-printable character escaped. An interrupt ends the command
-with `tgmark: error: interrupted` and exit code `1`.
+A warning line reports one [diagnostic](library.md#diagnostic) of the
+conversion: its message, its line and column, and its code in brackets. Under
+`--strict`, the one error line reports the condition that refuses the input: its
+name, its line and column, and its code in brackets. An error line names what
+failed, and a path in it shows at most its last 32 characters, each
+non-printable character escaped. An interrupt ends the command with
+`tgmark: error: interrupted` and exit code `1`.
 
 ## Examples
 
