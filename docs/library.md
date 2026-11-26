@@ -50,8 +50,7 @@ sent, splitting text too long for one message.
 
 - `text` — the text to convert: a `str`, or `bytes` in the encoding their byte
   order mark names, UTF-8, UTF-16BE, or UTF-16LE, else in UTF-8; a diagnostic's
-  `line` and `column` then count the decoded text. *Changed in the next release:
-  also takes `bytes`.*
+  `line` and `column` then count the decoded text.
 - `source` — the format of `text`: `"plain"` reads every character as
   written; required.
 - `target` — the form of each message: `"entities"` sends its text with no parse

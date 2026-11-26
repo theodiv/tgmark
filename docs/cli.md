@@ -1,11 +1,11 @@
 # Command Line
 
-*Added in the next release.*
-
-The `tgmark` command: its usage, input, output, and exit codes. What a
-result means: [Behavior](behavior.md).
+The `tgmark` command: its usage, input, output, and exit codes. What a result
+means: [Behavior](behavior.md).
 
 ## Usage
+
+`tgmark --help` prints:
 
 ```text
 usage: tgmark -s SOURCE -t TARGET [-l N] [-p N] [-S] [-h] [-V] [FILE]
@@ -55,8 +55,8 @@ locale. More than 4 MiB is refused with exit code `65`.
 
 One line of JSON per message on stdout, in order: the object `Message.params()`
 returns ([Library](library.md#message)), in ASCII, each other character escaped
-as `\uXXXX`, or as two of them past U+FFFF. Nothing when no message remains
-to send, or when `--strict` refuses the input.
+as `\uXXXX`, or as two of them past U+FFFF. Nothing when no message remains to
+send, or when `--strict` refuses the input.
 
 ## Exit Codes
 
