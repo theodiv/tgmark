@@ -50,8 +50,8 @@ dev = [
   "pre-commit==4.7.0",
   "pytest==9.2.0",
   "pytest-cov==7.1.0",
-  "ruff==0.17.4",
-  "tdlib-oracle==0.1.0",
+  "ruff==0.17.5",
+  "tdlib-oracle==0.2.0",
   "zizmor==1.32.0",
 ]
 release = [
