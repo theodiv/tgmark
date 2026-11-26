@@ -54,7 +54,7 @@ The steps run in this order:
   its arguments.
 - Time and memory grow linearly with the length of the input.
 
-Threats and how to report them: [`SECURITY.md`](../SECURITY.md).
+Threats and how to report them: [Security Policy](../SECURITY.md).
 
 ## Out of Scope
 
