@@ -70,6 +70,12 @@ jobs:
           VERSION: ${{ needs.check.outputs.version }}
         run: sed -i "s/^__version__ = \".*\"$/__version__ = \"$VERSION\"/" src/tgmark/__init__.py
 
+      - name: Point docs links at the tag
+        if: github.event_name == 'push'
+        env:
+          VERSION: ${{ needs.check.outputs.version }}
+        run: sed -i -E "s#(github\.com/$GITHUB_REPOSITORY/(blob|tree))/main/docs#\1/v$VERSION/docs#gI" README.md pyproject.toml
+
       - name: Create virtual environment
         run: python -m venv --upgrade-deps .venv
 
