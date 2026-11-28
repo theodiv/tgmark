@@ -14,10 +14,7 @@ class TGMarkError(Exception):
 class ConversionError(TGMarkError):
     """Raised in strict mode where lenient mode would repair or drop the input.
 
-    Strict mode converts as lenient mode does, then raises for the condition at the
-    earliest input position, the one the input's author fixes first, instead of
-    returning a conversion that changes the input. The message names the condition and
-    its position and never quotes the input.
+    The message names the condition and its position and never quotes the input.
 
     Attributes:
         code: The condition's code, as a `Diagnostic` carries it.

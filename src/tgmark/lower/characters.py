@@ -1,10 +1,4 @@
-"""The server's character rules applied to formatted text, with a notice per change.
-
-The rules run in the server's order: control characters become spaces and the characters
-the server removes go, then direction marks change, so two marks that only a removed
-character kept apart are caught as the server catches them. Each rule scans the text
-with one regular expression, so only the characters it changes cost more than the scan.
-"""
+"""The server's character rules applied to formatted text, with a notice per change."""
 
 import re
 from collections.abc import Iterable
@@ -33,6 +27,10 @@ _MARK_BEFORE_MARK = re.compile(
 
 def clean(formatted: FormattedText) -> tuple[FormattedText, tuple[Notice, ...]]:
     """Return `formatted` with the server's character rules applied, and a notice each.
+
+    The rules run in the server's order: control characters become spaces and the
+    characters the server removes go, then direction marks change, so two marks that
+    only a removed character kept apart are caught as the server catches them.
 
     Returns:
         The cleaned text, and a notice for each character changed, rule by rule.

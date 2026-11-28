@@ -1,13 +1,4 @@
-"""Formatted text split into messages that fit, with the edges trimmed.
-
-A message holds at most the length limit of kept text, counted as the server counts it
-once it trims the spaces and line feeds at the edges. Longer text splits where a reader
-expects a break: each message ends at the last paragraph break that fits, else the last
-line break, sentence end, or run of spaces, else between any two grapheme clusters. A
-cut drops the spaces and line feeds at it, which the server would trim from the edges of
-both messages anyway. One pass finds every place a cut may fall, and each message then
-takes a bisection per kind of place, so the work grows linearly with the text.
-"""
+"""Formatted text split into messages that fit, with the edges trimmed."""
 
 import re
 import unicodedata
@@ -50,15 +41,7 @@ _PARAGRAPH, _LINE, _SENTENCE, _WORD = range(4)
 
 @dataclass(frozen=True)
 class _Cuts:
-    """The places a cut may fall in a text, from the one pass that finds them all.
-
-    Attributes:
-        flags: A flag per offset, 1 where a cut keeps every grapheme cluster whole.
-        ends: For each kind of place, in order of preference, the offset where the text
-            before each place ends, in ascending order.
-        starts: For each kind, the offset where the text after each place starts, past
-            the spaces and line feeds that a cut there drops.
-    """
+    """The places a cut may fall in a text, from the one pass that finds them all."""
 
     flags: bytes
     ends: tuple[tuple[int, ...], ...]
@@ -71,16 +54,13 @@ def fit_text(
     """Return the text of each message `formatted` makes, and the notices of changes.
 
     Each message's text holds at most `max_length` code points, never ends before its
-    first character that is not blank, and ends at the best cut that fits. A grapheme
-    cluster longer than `max_length` is cut at the limit, with a notice at each such
-    cut. Blank characters share a message with other text, which the server requires,
-    so only a run of them longer than `max_length`, or one with no other text after it,
-    is dropped. Text past `max_parts` messages is dropped too.
-
-    Args:
-        formatted: The text, with the server's character rules applied.
-        max_length: The most code points the text of a message may hold.
-        max_parts: The most messages to make, or `None` for no cap.
+    first character that is not blank, and ends at the best cut that fits. A cut drops
+    the spaces and line feeds at it, which the server would trim from the edges of both
+    messages anyway. A grapheme cluster longer than `max_length` is cut at the limit,
+    with a notice at each such cut. Blank characters share a message with other text,
+    which the server requires, so only a run of them longer than `max_length`, or one
+    with no other text after it, is dropped. Text past `max_parts` messages is
+    dropped too.
 
     Returns:
         The texts of the messages, and a notice for each cut inside a cluster and for
@@ -202,10 +182,10 @@ def _cut(
 ) -> tuple[int, int, bool]:
     """Return where the message from `start` ends and where the text after it starts.
 
-    The message takes the last place of the most preferred kind that ends past `kept`,
-    its first character that is not blank, and at or before `limit`. Without one, it
-    ends at the last offset in that span where the cluster rule allows a cut that no
-    space or line feed adjoins, and failing that at `limit`, inside a cluster.
+    The message takes the last place of the most preferred kind that ends past `kept`
+    and at or before `limit`. Without one, it ends at the last offset in that span where
+    the cluster rule allows a cut that no space or line feed adjoins, and failing that
+    at `limit`, inside a cluster.
 
     Returns:
         The end of the message, the start of the text after it, and whether the cut
@@ -235,11 +215,11 @@ def _blank_run_end(
 ) -> int:
     """Return where to end a run of blank characters too long for one message.
 
-    The run from `start` ends at the last offset up to `kept`, the first character that
-    is not blank, where the cluster rule allows a cut both there and past the spaces
-    and line feeds after it, so the blank characters that share a cluster with `kept`
-    start the next message with it. When there is no such offset, or the next message
-    could still not reach `kept`, the run ends at `kept`, inside its cluster.
+    The run from `start` ends at the last offset up to `kept` where the cluster rule
+    allows a cut both there and past the spaces and line feeds after it, so the blank
+    characters that share a cluster with `kept` start the next message with it. When
+    there is no such offset, or the next message could still not reach `kept`, the run
+    ends at `kept`, inside its cluster.
     """
     next_start = kept
     for offset in range(kept, start, -1):

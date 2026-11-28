@@ -1,10 +1,4 @@
-"""Diagnostic records and the conditions they report.
-
-Each condition has a code, which callers filter by and which never changes once
-released; a name, as a noun phrase; and an outcome, what lenient mode does instead. A
-diagnostic's message joins the name and the outcome, and strict mode's error the name
-and the position, so both describe one condition, each in its own terms.
-"""
+"""Diagnostic records and the conditions they report."""
 
 from dataclasses import dataclass
 
@@ -13,13 +7,7 @@ from tgmark.model.document import Position
 
 @dataclass(frozen=True)
 class Condition:
-    """A condition in the input that lenient mode repairs or drops.
-
-    Attributes:
-        code: The code callers see, such as `control-character`.
-        name: The condition as a noun phrase, such as `control character`.
-        outcome: What lenient mode does instead, such as `replaced with a space`.
-    """
+    """A condition in the input that lenient mode repairs or drops."""
 
     code: str
     name: str
@@ -28,12 +16,7 @@ class Condition:
 
 @dataclass(frozen=True)
 class Notice:
-    """One condition found in the input.
-
-    Attributes:
-        condition: The condition.
-        position: Where it starts in the input.
-    """
+    """One condition found in the input."""
 
     condition: Condition
     position: Position

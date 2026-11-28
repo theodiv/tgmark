@@ -1,9 +1,7 @@
 """Grapheme cluster boundaries as UAX #29 defines them at each Unicode version.
 
 Each version's rules run on that version's own property data, read from its files in
-`tests/data/unicode/`, so the boundaries never depend on the running Python's
-`unicodedata`. The rule that keeps an Indic conjunct whole, GB9c, first appears in
-15.1.0, and 18.0.0 drops the consonant it required before the linker.
+`tests/data/unicode/`, never on the running Python's `unicodedata`.
 """
 
 from collections.abc import Callable, Iterator
@@ -58,18 +56,7 @@ _CODE_POINTS = 0x110000
 
 @dataclass(frozen=True)
 class Unicode:
-    """The grapheme cluster rules of one Unicode version, with its property data.
-
-    Attributes:
-        version: The Unicode version, such as `15.1.0`.
-        breaks: The Grapheme_Cluster_Break value of each code point, as an index into
-            `BREAK_VALUES`.
-        pictographic: 1 for each code point that is Extended_Pictographic, 0 for any
-            other.
-        conjunct: The Indic_Conjunct_Break value of each code point, as an index into
-            `CONJUNCT_VALUES`; `None` throughout before 15.1.0, which lacks
-            the property.
-    """
+    """The grapheme cluster rules of one Unicode version, with its property data."""
 
     version: str
     breaks: bytes

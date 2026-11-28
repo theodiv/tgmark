@@ -1,10 +1,7 @@
 """Input made valid text: `bytes` decoded, and each lone surrogate replaced.
 
-Every later stage reads a `str` that encodes as UTF-8, which the server requires: it
-refuses invalid UTF-8 (tdutils/td/utils/utf8.cpp, check_utf8()). So `bytes` decode here,
-each byte sequence their encoding refuses becoming U+FFFD, and each surrogate code point
-of a `str`, which no UTF-8 encoder accepts, becomes U+FFFD too. A high surrogate before
-a low one counts as two, since a `str` holds code points, not UTF-16 code units.
+This module alone makes input valid text, so every later stage reads a `str` that
+encodes as UTF-8.
 """
 
 import codecs
@@ -48,7 +45,12 @@ def decode_bytes(data: bytes) -> tuple[str, tuple[Notice, ...]]:
 
 
 def replace_surrogates(text: str) -> tuple[str, tuple[Notice, ...]]:
-    """Return `text` with each surrogate replaced, and a notice for each replacement."""
+    """Return `text` with each surrogate replaced, and a notice for each replacement.
+
+    No UTF-8 encoder accepts a surrogate, and the server refuses invalid UTF-8
+    (tdutils/td/utils/utf8.cpp, check_utf8()). A high surrogate before a low one counts
+    as two, since a `str` holds code points, not UTF-16 code units.
+    """
     offsets = [match.start() for match in _SURROGATE.finditer(text)]
     if not offsets:
         return text, ()

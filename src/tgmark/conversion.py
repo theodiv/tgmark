@@ -1,9 +1,7 @@
 """Conversion of text into Telegram messages: `convert` and the types it returns.
 
 This module alone wires the stages together, `parse`, then `lower`, then `fit`, so no
-domain imports another. The domains report each condition they repair or drop as a
-foundation record, which this module maps onto `Diagnostic`; in strict mode it raises
-for the record at the earliest position instead.
+domain imports another.
 """
 
 from dataclasses import dataclass
@@ -90,10 +88,9 @@ def convert(
     """Convert `text` into Telegram messages that the Bot API server keeps as sent.
 
     Lenient mode repairs or drops what the server would refuse or change and reports
-    each repair or drop as a diagnostic; strict mode raises at the earliest instead, for
-    a caller that refuses input that would not arrive unchanged. Text longer than one
-    message splits into several, each ending at the best break that fits. The options
-    are keyword-only so that a new option never changes the meaning of an existing call.
+    each repair or drop as a diagnostic. Text longer than one message splits into
+    several, each ending at the best break that fits. The options are keyword-only so
+    that a new option never changes the meaning of an existing call.
 
     Args:
         text: The text to convert: a `str`, or `bytes` in the encoding their byte order
@@ -113,8 +110,8 @@ def convert(
             `strict` is not a `bool`.
         ValueError: If `source` or `target` names a format other than those above, or
             `max_length` or `max_parts` is out of its range.
-        ConversionError: If `strict` is set and lenient mode would repair or
-            drop anything.
+        ConversionError: If `strict` is set and lenient mode would repair or drop
+            anything, for the condition at the earliest input position.
     """
     _check_arguments(text, source, target, max_length, max_parts, strict)
 
@@ -129,6 +126,7 @@ def convert(
     )
 
     notices = sorted((*decoding, *lowering, *fitting), key=lambda n: n.position)
+    # The earliest condition is the one the input's author fixes first.
     if strict and notices:
         raise _error(notices[0])
 
@@ -158,7 +156,7 @@ def _check_arguments(
 
 
 def _check_choice(name: str, value: object, choices: tuple[str, ...]) -> None:
-    """Raise unless `value`, the argument called `name`, is one of `choices`."""
+    """Raise unless `value` is one of `choices`."""
     if not isinstance(value, str):
         raise TypeError(f"{name} must be str, not {type(value).__name__}")
     if value not in choices:
@@ -167,10 +165,9 @@ def _check_choice(name: str, value: object, choices: tuple[str, ...]) -> None:
 
 
 def _check_count(name: str, value: object, highest: int | None) -> None:
-    """Raise unless `value`, the argument called `name`, is `None` or a count.
+    """Raise unless `value` is `None` or an `int` from 1 up to `highest`.
 
-    A count is an `int` from 1 up to `highest`, or with no upper bound when `highest` is
-    `None`. A `bool` is refused although it is an `int`, since `True` would read as 1.
+    A `bool` is refused although it is an `int`, since `True` would read as 1.
     """
     if value is None:
         return
@@ -183,7 +180,6 @@ def _check_count(name: str, value: object, highest: int | None) -> None:
 
 
 def _diagnostic(notice: Notice) -> Diagnostic:
-    """Return the diagnostic that reports `notice`."""
     condition = notice.condition
     return Diagnostic(
         code=condition.code,
@@ -194,7 +190,6 @@ def _diagnostic(notice: Notice) -> Diagnostic:
 
 
 def _error(notice: Notice) -> ConversionError:
-    """Return the error strict mode raises for `notice`."""
     line, column = notice.position.line, notice.position.column
     return ConversionError(
         f"{notice.condition.name} at line {line}, column {column}",

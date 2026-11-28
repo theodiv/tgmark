@@ -1,12 +1,7 @@
 """Grapheme cluster boundaries a cut may use, so that no cut splits a character.
 
-The rule follows UAX #29's extended grapheme clusters from `unicodedata` and small fixed
-sets of code points, since the package ships none of Unicode's property files. Where
-`unicodedata` cannot settle a boundary, the rule refuses it: a refused boundary costs at
-most a shorter message, while a cut inside a cluster splits what a reader sees as one
-character. The fixed sets hold what the oldest supported Python's Unicode version,
-14.0.0, lacks up to 18.0.0, so every supported Python refuses each cut that its own
-version or 18.0.0 forbids.
+The rule reads only `unicodedata` and the fixed sets below: the package ships none of
+Unicode's property files, which would add their license to its own.
 """
 
 import unicodedata
@@ -14,7 +9,6 @@ from collections.abc import Iterable
 
 
 def _chars(*spans: int | tuple[int, int]) -> frozenset[str]:
-    """Return the characters of `spans`, each a code point or an inclusive range."""
     codes: list[Iterable[int]] = [
         range(span[0], span[1] + 1) if isinstance(span, tuple) else (span,)
         for span in spans
@@ -180,11 +174,10 @@ def boundaries(text: str) -> bytes:
     """Return a flag per offset of `text`, 1 where a cut keeps every cluster whole.
 
     The flags run from offset 0 to `len(text)`, both ends included and set, so a cut at
-    an offset is allowed exactly when its flag is 1. A cut is refused inside CR LF;
-    before a character that attaches to the one before it, such as a mark; after the
-    joiner U+200D or a prepend character; after a linker, and any attaching characters
-    after it, before a letter or an unassigned code point; inside a Hangul syllable
-    sequence; and inside a pair of regional indicators.
+    an offset is allowed exactly when its flag is 1. Where `unicodedata` cannot settle a
+    boundary, the rule refuses it: a refused boundary costs at most a shorter message,
+    while a cut inside a cluster splits what a reader sees as one character. Every
+    supported Python refuses each cut that its own Unicode version or 18.0.0 forbids.
     """
     flags = bytearray(b"\x01" * (len(text) + 1))
     before = 0
