@@ -1,10 +1,4 @@
-"""Telegram's formatted text, with each run of it mapped back to the input.
-
-The later stages report diagnostics, such as text dropped past a limit, that name an
-input position, so the text carries its positions along. One position per run rather
-than per character keeps the cost to the number of runs: one for each line, and one more
-for each character removed from it.
-"""
+"""Telegram's formatted text, with each run of it mapped back to the input."""
 
 from bisect import bisect_left, bisect_right
 from collections.abc import Iterable
@@ -18,11 +12,9 @@ class Run:
     """A stretch of formatted text whose characters stand one for one in the input.
 
     The characters of a run sit on one line of the input at consecutive columns, so the
-    position of each follows from the run's own.
-
-    Attributes:
-        start: Where the run starts in the text.
-        position: The input position of the run's first character.
+    position of each follows from the run's own. One position per run rather than per
+    character keeps the cost to the number of runs, which grows with the lines and the
+    characters removed, not with the length of the text.
     """
 
     start: int
@@ -30,7 +22,6 @@ class Run:
 
 
 def _run_start(run: Run) -> int:
-    """Return where `run` starts, the key its text's runs are ordered by."""
     return run.start
 
 
@@ -38,10 +29,8 @@ def _run_start(run: Run) -> int:
 class FormattedText:
     """Text bound for a message, with the runs that map it back to the input.
 
-    Attributes:
-        text: The text.
-        runs: The runs, in order of `start`; the first starts at 0, and an empty text
-            has none.
+    The runs stand in order of their starts, the first at 0 unless the text is empty,
+    since `position` and `slice` bisect them.
     """
 
     text: str

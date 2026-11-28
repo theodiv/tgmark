@@ -1,10 +1,8 @@
 """The Bot API server's rules on the text of a message.
 
-Each rule states what the code of the Bot API server and TDLib does at the commits that
-the TDLib Oracle release in the `dev` group reproduces, and cites the file and the
-definition it follows: that code decides what the server keeps, wherever Telegram's
-documentation says otherwise. `lower` and `fit` apply the rules, and the tests check
-each one against TDLib Oracle.
+This module alone states the rules, each as the code of the Bot API server and TDLib
+behaves at the commits that the TDLib Oracle release in the `dev` group reproduces, even
+where Telegram's documentation says otherwise.
 """
 
 # The most code points a message keeps, counted once the text is cleaned and trimmed

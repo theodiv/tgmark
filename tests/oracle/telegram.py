@@ -1,9 +1,4 @@
-"""The pinned Bot API server's verdict on each message, through TDLib Oracle.
-
-The TDLib Oracle release in the `dev` group checks a plain message text alone, so a
-message holding any other parameter fails here: output in a parse mode, with entities,
-or as a caption cannot pass before the release that checks it.
-"""
+"""The pinned Bot API server's verdict on each message, through TDLib Oracle."""
 
 from collections.abc import Mapping
 
@@ -19,17 +14,13 @@ def check_message(
     """Check that the pinned Bot API server keeps a message exactly as sent.
 
     The server's own limits, 4,096 code points of kept text and 32,768 bytes of text as
-    sent, reach a test as TDLib Oracle's refusals; only a test's `max_length` is
-    counted here.
-
-    Args:
-        params: The Bot API parameters of the message, such as `text`.
-        max_length: The most code points the kept text may hold, or `None` for the
-            server's limit alone.
+    sent, reach a test as TDLib Oracle's refusals; only a test's `max_length` is counted
+    here. The text alone reaches TDLib Oracle, so a message that holds any other
+    parameter the server reads fails rather than pass with it unchecked.
 
     Raises:
-        AssertionError: If the message holds a parameter TDLib Oracle does not check or
-            no text; if the server refuses it, changes its text, or keeps an entity or a
+        AssertionError: If the message holds no text, or another parameter the server
+            reads; if the server refuses it, changes its text, or keeps an entity or a
             backend mark; or if the kept text holds more than `max_length` code points.
     """
     __tracebackhide__ = True  # pytest reports a failure at the test's call

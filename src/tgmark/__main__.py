@@ -108,9 +108,9 @@ def _parser() -> argparse.ArgumentParser:
 def _count(highest: int | None) -> Callable[[str], int]:
     """Return the parser of a count flag's value, an integer from 1 up to `highest`.
 
-    A `highest` of `None` sets no upper bound. `argparse` reports a value the parser
-    refuses as a usage error that names the flag, and its message never quotes the
-    value, since a flag's value is input as much as the text is.
+    `argparse` reports a value the parser refuses as a usage error that names the flag,
+    and its message never quotes the value, since a flag's value is input as much as the
+    text is.
     """
     expected = (
         "a positive integer" if highest is None else f"an integer from 1 to {highest}"
@@ -156,9 +156,6 @@ def main(argv: Sequence[str] | None = None) -> int:
     An exception nobody expected, or an interrupt, ends the run with exit code 1 and one
     error line instead of a traceback. The line names the exception by its class alone,
     since its message could quote the input.
-
-    Args:
-        argv: The arguments, or `None` for the process's own.
 
     Raises:
         SystemExit: If argparse ends the run: with code 0 once it prints the help or the

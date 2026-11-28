@@ -1,8 +1,4 @@
-"""The document tree the readers build, and positions in the input.
-
-Each node carries the position of its first character, so a diagnostic about any
-character in it can name where the input's author wrote that character.
-"""
+"""The document tree the readers build, and positions in the input."""
 
 import re
 from bisect import bisect_right
@@ -20,11 +16,6 @@ class Position:
 
     Positions order as the text runs, line first, so sorting diagnostics by position
     puts them in input order.
-
-    Attributes:
-        line: The line, counted from 1.
-        column: The column in that line, counted from 1 in code points; an astral
-            character takes one column, as it takes one index of a `str`.
     """
 
     line: int
@@ -33,12 +24,7 @@ class Position:
 
 @dataclass(frozen=True)
 class Text:
-    """A run of characters that stand one for one on one line of the input.
-
-    Attributes:
-        value: The characters, holding no line ending.
-        position: The position of the first character.
-    """
+    """A run of characters that stand one for one on one line of the input."""
 
     value: str
     position: Position
@@ -46,11 +32,7 @@ class Text:
 
 @dataclass(frozen=True)
 class LineBreak:
-    """A line ending of the input.
-
-    Attributes:
-        position: The position of the line ending's first character.
-    """
+    """A line ending of the input."""
 
     position: Position
 
@@ -60,11 +42,7 @@ Node: TypeAlias = Text | LineBreak
 
 @dataclass(frozen=True)
 class Document:
-    """The input as a reader reads it.
-
-    Attributes:
-        nodes: The text runs and line breaks, in input order.
-    """
+    """The input as a reader reads it."""
 
     nodes: tuple[Node, ...]
 
@@ -72,8 +50,7 @@ class Document:
 def locate(text: str, offsets: Iterable[int]) -> tuple[Position, ...]:
     """Return the position of the character at each of `offsets` in `text`.
 
-    The line starts are found once for all the offsets, and then each offset takes
-    one bisection.
+    Each call scans `text` once, however many offsets it takes.
     """
     starts = [0, *(match.end() for match in LINE_ENDING.finditer(text))]
     positions = []

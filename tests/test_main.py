@@ -40,11 +40,7 @@ def _stdin(monkeypatch: pytest.MonkeyPatch, data: bytes) -> None:
 
 
 def _messages(out: bytes, *, max_length: int | None = None) -> list[dict[str, object]]:
-    """Return the messages the command wrote, each passed through the checker.
-
-    The output must be ASCII, one JSON object per line, each line ending in a line feed,
-    and each message must keep at most `max_length` code points of text, if given.
-    """
+    """Return the messages the command wrote, each passed through the checker."""
     assert out.isascii()
     lines = out.decode("ascii").split("\n")
     assert lines.pop() == ""
@@ -402,10 +398,7 @@ def test_refuses_arguments_it_does_not_take(
 
 
 def _refusal(flag: str, value: str, capfd: pytest.CaptureFixture[bytes]) -> str:
-    """Return the last line of stderr once the command refuses `value` for `flag`.
-
-    The command must exit with code 2, write nothing to stdout, and never quote `value`.
-    """
+    """Return the last line of stderr once the command refuses `value` for `flag`."""
     with pytest.raises(SystemExit) as exit_info:
         main([*_FORMATS, flag, value])
     assert exit_info.value.code == 2
